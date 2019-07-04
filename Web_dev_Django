@@ -1,0 +1,39 @@
+# here i am creating the api for the imdb search bar 
+#  using this api user can easily access the data like name of the movie , cast , ratings
+
+
+# importing the movie package from .models\
+
+from .models import Movie
+from .serializers import MovieSerializer
+
+# Create your views here. small views are like same to refelect the data in the desired format.
+
+class IndexView(APIView):
+   
+    allowed_methods = ['GET']
+    serializer_class = MovieSerializer
+def get(self, request, *args, **kwargs):
+        queryset = Movie.objects.all()
+        # We can filter our movies by name
+        name = request.query_params.get('name', None)
+        if name is not None:
+            queryset = queryset.filter(name__icontains=name)
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+# importing the serializers from the rest framework
+
+from rest_framework import serializers
+from .models import Movie, Genre
+class GenreSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Genre
+        fields = '__all__'
+class MovieSerializer(serializers.ModelSerializer):
+    
+    genre = GenreSerializer(many=True)
+class Meta:
+        model = Movie
+        fields = ('name', 'imdb_score', 'popularity', 'director', 'genre')
